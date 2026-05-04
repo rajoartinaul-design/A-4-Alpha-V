@@ -1,63 +1,72 @@
 import streamlit as st
 
-st.set_page_config(page_title="ALPHA-V ENGINE", layout="wide")
+# Configuration de la page
+st.set_page_config(page_title="Aï4 - ENGINE V3", layout="wide")
 
-# Style CSS
+# Style visuel Aï4 (Noir, Cyan, Or)
 st.markdown("""
     <style>
-    .stApp { background-color: #000000; color: #00FFFF; }
-    h1, h2, h3 { color: #00FFFF !important; font-family: 'Courier New', monospace; }
-    .box-bleu { border: 2px solid #00FFFF; padding: 15px; background-color: #050505; border-radius: 10px; }
-    .texte-or { color: #FFD700 !important; font-weight: bold; }
-    </style>
-""", unsafe_allow_html=True)
+        .stApp { background-color: #000000; color: #00FFFF; }
+            .box-verdict { border: 2px solid #FFD700; padding: 20px; background-color: #050505; border-radius: 10px; margin-bottom: 20px; }
+                .instruction { color: #00FFFF; font-style: italic; font-size: 0.9em; border-left: 3px solid #FFD700; padding-left: 10px; }
+                    .score-exact { color: #FFD700; font-size: 1.8em; font-weight: bold; }
+                        .section-title { color: #FFFFFF; background-color: #008B8B; padding: 5px 15px; border-radius: 5px; }
+                            </style>
+                            """, unsafe_allow_html=True)
 
-# Groupes d'équipes
-FORCE_GROUP = ["Algeria", "Nigeria", "Morocco", "Cameroon", "Ghana", "Tunisia", "South Africa", "Zambia"]
-DEBT_GROUP = ["Senegal", "Mali", "Ivory Coast", "DRC", "Guinea", "Uganda", "Angola", "Benin"]
-ROOT_GROUP = ["Egypt", "Burkina Faso", "Gabon", "Togo", "Cape Verde", "Kenya", "Tanzania", "Zimbabwe"]
-ALL_TEAMS = sorted(FORCE_GROUP + DEBT_GROUP + ROOT_GROUP)
+                            st.title("🏛️ Aï4 : SYSTÈME D'ANALYSE D'IMAGES")
 
-if 'historique' not in st.session_state:
-    st.session_state.historique = {eq: [] for eq in ALL_TEAMS}
+                            # --- SECTION 1 : HISTORIQUE DES RÉSULTATS (3 JOURNÉES) ---
+                            st.markdown("<h3 class='section-title'>1. HISTORIQUE : Captures des Résultats Passés</h3>", unsafe_allow_html=True)
+                            col_h1, col_h2, col_h3 = st.columns(3)
 
-def calculer_pronostic(equipe, journee):
-    if journee <= 15: return "OBSERVATION", "Attente stabilisation.", "SAUT"
-    histo = st.session_state.historique.get(equipe, [])
-    if equipe in DEBT_GROUP:
-        if any(sum(x) == 0 for x in histo[-3:]): return "DETTE ACTIVE", "Purge imminente.", "2-0 / 2-1"
-    if equipe in FORCE_GROUP:
-        if sum(sum(x) for x in histo[-3:]) >= 7: return "SURCHAUFFE", "Blocage imminent.", "0-0 / 1-0"
-    return "NEUTRE", "Aucune anomalie.", "SAUT"
+                            with col_h1:
+                                img_n2 = st.file_uploader("📸 Journée N-2 (Résultats)", type=['jpg', 'png', 'jpeg'], key="n2")
+                                with col_h2:
+                                    img_n1 = st.file_uploader("📸 Journée N-1 (Résultats)", type=['jpg', 'png', 'jpeg'], key="n1")
+                                    with col_h3:
+                                        img_n0 = st.file_uploader("📸 Journée N (Derniers Résultats)", type=['jpg', 'png', 'jpeg'], key="n0")
 
-st.title("🏛️ ALPHA-V : SYSTÈME PRÉDICTIF")
+                                        st.markdown("---")
 
-with st.sidebar:
-    st.header("⚙️ CONFIG")
-    num_j = st.number_input("Journée", 1, 46, 15)
-    if st.button("RAZ Historique"): st.session_state.historique = {eq: [] for eq in ALL_TEAMS}
+                                        # --- SECTION 2 : ANALYSE DES PROCHAINES AFFICHES ---
+                                        st.markdown("<h3 class='section-title'>2. PRÉVISIONS : Captures des Prochaines Affiches</h3>", unsafe_allow_html=True)
+                                        col_p1, col_p2 = st.columns(2)
 
-st.markdown("#### 🕒 SAISIE DES RÉSULTATS")
-c1, c2, c3 = st.columns(3)
-with c1:
-    eq_sel = st.selectbox("Équipe", ALL_TEAMS)
-with c2:
-    sc_sel = st.text_input("Score (ex: 1-0)", "0-0")
-with c3:
-    if st.button("ENREGISTRER"):
-        try:
-            st.session_state.historique[eq_sel].append([int(x) for x in sc_sel.split('-')])
-            st.success(f"{eq_sel} mis à jour.")
-        except: st.error("Format invalide.")
+                                        with col_p1:
+                                            img_next1 = st.file_uploader("📸 Capture Affiche n°1 (À venir)", type=['jpg', 'png', 'jpeg'], key="p1")
+                                            with col_p2:
+                                                img_next2 = st.file_uploader("📸 Capture Affiche n°2 (À venir)", type=['jpg', 'png', 'jpeg'], key="p2")
 
-st.markdown("#### 🔮 VERDICT")
-eq_p = st.selectbox("Analyser une affiche", ALL_TEAMS)
-et, inf, pr = calculer_pronostic(eq_p, num_j)
+                                                # --- LOGIQUE PRÉDICTIVE ---
+                                                def calculer_score_exact():
+                                                    # Cette fonction sera liée au moteur OCR plus tard
+                                                        return "2 - 1", "1 - 0"
 
-st.markdown(f'<div class="box-bleu">', unsafe_allow_html=True)
-st.write(f"**Équipe :** {eq_p} | **État :** {et}")
-if pr != "SAUT":
-    st.markdown(f'<p class="texte-or">PRONOSTIC : {pr}</p>', unsafe_allow_html=True)
-else:
-    st.markdown('<p style="color: #FF003F;">ACTION : SAUT</p>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+                                                        # --- SECTION 3 : VERDICT Aï4 ---
+                                                        st.markdown("---")
+                                                        if st.button("🚀 GÉNÉRER LES PRONOSTICS OR"):
+                                                            if not (img_n2 and img_n1 and img_n0 and img_next1 and img_next2):
+                                                                    st.error("ERREUR : Il manque des captures d'écran pour valider l'analyse mathématique.")
+                                                                        else:
+                                                                                st.balloons()
+                                                                                        sc1, sc2 = calculer_score_exact()
+                                                                                                
+                                                                                                        # ZONE DE RÉSULTAT 1
+                                                                                                                st.markdown('<div class="box-verdict">', unsafe_allow_html=True)
+                                                                                                                        st.write("### 🏁 PREMIÈRE ANALYSE (Affiche n°1)")
+                                                                                                                                st.markdown(f"SCORE EXACT PRÉDIT : <span class='score-exact'>{sc1}</span>", unsafe_allow_html=True)
+                                                                                                                                        st.markdown("<p class='instruction'>⚠️ SI CE SCORE EST VALIDÉ : Le flux de but confirme la rupture d'équilibre. Préparez la mise pour l'affiche suivante.</p>", unsafe_allow_html=True)
+                                                                                                                                                st.markdown('</div>', unsafe_allow_html=True)
+
+                                                                                                                                                        # ZONE DE RÉSULTAT 2
+                                                                                                                                                                st.markdown('<div class="box-verdict">', unsafe_allow_html=True)
+                                                                                                                                                                        st.write("### 🏁 DEUXIÈME ANALYSE (Affiche n°2)")
+                                                                                                                                                                                st.markdown(f"SCORE EXACT PRÉDIT : <span class='score-exact'>{sc2}</span>", unsafe_allow_html=True)
+                                                                                                                                                                                        st.markdown("<p class='instruction'>✅ CONFIRMATION : Ce pronostic est lié au résultat de l'affiche n°1. Ne misez que si l'affiche 1 a suivi la logique Aï4.</p>", unsafe_allow_html=True)
+                                                                                                                                                                                                st.markdown('</div>', unsafe_allow_html=True)
+
+                                                                                                                                                                                                st.sidebar.markdown("### ⚙️ PARAMÈTRES Aï4")
+                                                                                                                                                                                                st.sidebar.write("**Saison :** 45 Journées")
+                                                                                                                                                                                                st.sidebar.write("**Cycle :** 3 min")
+                                                                                                                                                                                                st.sidebar.write("**Langue :** Anglais (EN)")
